@@ -8,6 +8,7 @@ define(function (require, exports, module) {
   const Account = require('models/account');
   const { assert } = require('chai');
   const FxiOSAuthenticationBroker = require('models/auth_brokers/fx-ios-v1');
+  const FxDesktopV1AuthenticationBroker = require('models/auth_brokers/fx-desktop-v1');
   const NullChannel = require('lib/channels/null');
   const Relier = require('models/reliers/relier');
   const sinon = require('sinon');
@@ -118,6 +119,24 @@ define(function (require, exports, module) {
         });
       });
 
+      describe('afterCompleteSignInWithCode', () => {
+        let account;
+
+        beforeEach(() => {
+          sinon.spy(broker, 'afterCompleteSignInWithCode');
+          sinon.spy(broker, '_notifyRelierOfLogin');
+          sinon.spy(FxDesktopV1AuthenticationBroker.prototype, 'afterCompleteSignInWithCode');
+          account = new Account({
+            uid: 'uid'
+          });
+          return broker.afterCompleteSignInWithCode(account);
+        });
+
+        it('broker calls correct methods', () => {
+          assert.isTrue(FxDesktopV1AuthenticationBroker.prototype.afterCompleteSignInWithCode.called);
+          assert.isTrue(broker._notifyRelierOfLogin.called);
+        });
+      });
     });
   });
 });
